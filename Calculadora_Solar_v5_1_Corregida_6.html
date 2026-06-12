@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Solar Profesional - Multi-zona</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="file"],
+        select,
+        input[type="number"],
+        input[type="range"] {
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+        }
+        
+        input[type="file"]:hover,
+        select:hover,
+        input[type="number"]:hover {
+            border-color: #667eea;
+        }
+        
+        input[type="file"]:focus,
+        select:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .canvas-wrapper {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f5f5f5;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+            max-height: 650px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            height: fit-content;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .zones-list {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .zone-item {
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .zone-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .zone-item.active {
+            background: #e3f2fd;
+            border-left-color: #2196F3;
+        }
+        
+        .zone-item.color-0 { border-left-color: #FF6B6B; }
+        .zone-item.color-1 { border-left-color: #4ECDC4; }
+        .zone-item.color-2 { border-left-color: #FFE66D; }
+        .zone-item.color-3 { border-left-color: #95E1D3; }
+        .zone-item.color-4 { border-left-color: #F38181; }
+        
+        .zone-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .zone-info {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .zone-controls {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .zone-controls h4 {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .rotation-control {
+            display: grid;
+            grid-template-columns: 1fr 60px;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .rotation-control input[type="range"] {
+            width: 100%;
+        }
+        
+        .rotation-value {
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+            color: #667eea;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .sidebar-info {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .sidebar-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-top: 4px;
+        }
+        
+        .orientation-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .orientation-btn {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .orientation-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .orientation-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        
+        button {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .secondary-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .secondary-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .danger-btn {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+        
+        .success-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+        
+        .success-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .report-section {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .report-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .report-section h3 {
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .report-card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .report-card-title {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .report-card-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .report-card.success {
+            border-left-color: #4caf50;
+        }
+        
+        .report-card.success .report-card-value {
+            color: #4caf50;
+        }
+
+        .report-card.warning {
+            border-left-color: #ff9800;
+        }
+
+        .report-card.warning .report-card-value {
+            color: #ff9800;
+        }
+        
+        .instruction-banner {
+            padding: 15px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .instruction-banner strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .button-group-horizontal {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .button-group-horizontal button {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .info-box {
+            padding: 12px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #2e7d32;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+            }
+            .sidebar {
+                display: none;
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .zone-badge {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☀️ Calculadora Solar Profesional - Multi-zona</h1>
+            <p>Diseña instalaciones con múltiples zonas de paneles y rotaciones individuales</p>
+        </div>
+        
+        <div class="content">
+            <div class="main-grid">
+                <div>
+                    <!-- Instrucciones -->
+                    <div class="instruction-banner">
+                        <strong>📍 Modo actual: <span id="modeDisplay">Calibración</span></strong>
+                        <span id="modeInstructions">Dibuja una línea de referencia conocida en metros para calibrar la escala.</span>
+                    </div>
+
+                    <!-- Controles -->
+                    <div class="controls-section">
+                        <div class="control-group">
+                            <label>📸 Cargar foto de drone</label>
+                            <input type="file" id="imageInput" accept="image/*">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>🛠️ Modo</label>
+                            <select id="toolMode">
+                                <option value="calibrate">1. Calibración</option>
+                                <option value="draw">2. Dibujar zona</option>
+                                <option value="measure">3. Medir</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label>📍 Latitud</label>
+                            <input type="number" id="latitude" placeholder="Latitud" min="-90" max="90" value="10.39" step="0.01">
+                        </div>
+
+                        <div class="control-group">
+                            <label>📍 Longitud</label>
+                            <input type="number" id="longitude" placeholder="Longitud" min="-180" max="180" value="-75.51" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <!-- Canvas -->
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas" width="1200" height="650"></canvas>
+                    </div>
+                    
+                    <!-- Opciones -->
+                    <div style="margin-bottom: 15px;">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showGrid" checked>
+                            <label for="showGrid">Renderizar paneles</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showDrawing" checked>
+                            <label for="showDrawing">Mostrar herramientas</label>
+                        </div>
+                    </div>
+
+                    <!-- Botones de control -->
+                    <div class="button-group-horizontal">
+                        <button onclick="closePolygon()" id="closeBtn" disabled>✓ Cerrar zona</button>
+                        <button onclick="resetCanvas()" class="secondary-btn">🔄 Limpiar todo</button>
+                    </div>
+
+                    <!-- Reporte -->
+                    <div class="report-section" id="reportSection" style="display: none;">
+                        <h2>📊 Análisis del proyecto</h2>
+                        
+                        <h3>⚡ Capacidad y Generación</h3>
+                        <div class="report-grid">
+                            <div class="report-card">
+                                <div class="report-card-title">Paneles totales</div>
+                                <div class="report-card-value" id="reportPanels">0</div>
+                            </div>
+                            <div class="report-card success">
+                                <div class="report-card-title">Potencia total</div>
+                                <div class="report-card-value" id="reportPower">0 kW</div>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-card-title">Área total</div>
+                                <div class="report-card-value" id="reportArea">0 m²</div>
+                            </div>
+                        </div>
+
+                        <h3>📈 Producción Energética (4 horas pico)</h3>
+                        <div class="report-grid">
+                            <div class="report-card warning">
+                                <div class="report-card-title">Generación Mensual</div>
+                                <div class="report-card-value" id="reportMonthlyProduction">0 kWh</div>
+                            </div>
+                            <div class="report-card success">
+                                <div class="report-card-title">Generación Anual</div>
+                                <div class="report-card-value" id="reportAnnualProduction">0 MWh</div>
+                            </div>
+                        </div>
+
+                        <h3>💰 Análisis económico</h3>
+                        <div class="report-grid">
+                            <div class="report-card">
+                                <div class="report-card-title">Inversión estimada</div>
+                                <div class="report-card-value" id="reportInvestment">$0</div>
+                            </div>
+                            <div class="report-card success">
+                                <div class="report-card-title">Ahorros anuales</div>
+                                <div class="report-card-value" id="reportSavings">$0</div>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-card-title">Payback period</div>
+                                <div class="report-card-value" id="reportPayback">0 años</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                            <button onclick="exportImage('png')" class="success-btn">📥 PNG</button>
+                            <button onclick="exportImage('jpg')" class="success-btn">📥 JPG</button>
+                            <button onclick="exportPDF()" class="success-btn">📄 PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <h3>📋 Gestión de zonas</h3>
+                    
+                    <div class="info-box" id="calibrationBox" style="display: none;">
+                        ✓ Escala calibrada. Ya puedes crear zonas.
+                    </div>
+
+                    <div class="zones-list" id="zonesList">
+                        <div style="color: #999; font-size: 12px; text-align: center; padding: 20px;">
+                            Sin zonas creadas.<br/>Dibuja una zona para comenzar.
+                        </div>
+                    </div>
+
+                    <button onclick="startNewZone()" id="newZoneBtn" disabled style="margin-bottom: 15px;">➕ Nueva zona</button>
+
+                    <!-- Controles de zona activa -->
+                    <div class="zone-controls" id="zoneControls" style="display: none;">
+                        <h4>Zona activa: <span id="activeZoneName">-</span></h4>
+                        
+                        <label style="margin-bottom: 8px;">Orientación</label>
+                        <div class="orientation-toggle">
+                            <div class="orientation-btn active" id="horizontalBtn" onclick="setOrientation('horizontal')">
+                                ⬚ Horizontal<br/><span style="font-size: 10px;">(2.4m)</span>
+                            </div>
+                            <div class="orientation-btn" id="verticalBtn" onclick="setOrientation('vertical')">
+                                ⬛ Vertical<br/><span style="font-size: 10px;">(1.3m)</span>
+                            </div>
+                        </div>
+
+                        <label style="margin-bottom: 8px;">Rotación de paneles</label>
+                        <div class="rotation-control">
+                            <input type="range" id="rotationSlider" min="0" max="180" value="0" step="1" onchange="updateRotation()">
+                            <div class="rotation-value" id="rotationValue">0°</div>
+                        </div>
+
+                        <button onclick="deleteZone()" class="danger-btn" style="margin-top: 10px;">🗑️ Eliminar zona</button>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-top: 15px;">
+                        <h4 style="font-size: 12px; margin-bottom: 12px; color: #333;">🚶 Pasillos de mantenimiento</h4>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 11px; color: #666;">Horizontal (entre filas)</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div>
+                                    <label style="font-size: 10px; color: #999;">Cada X filas</label>
+                                    <input type="number" id="horizontalPassEvery" min="0" max="20" value="0" onchange="updatePassageway('horizontal', 'every', this.value)" style="width: 100%; padding: 6px; font-size: 12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px; color: #999;">Ancho (cm)</label>
+                                    <input type="number" id="horizontalPassWidth" min="10" max="100" value="30" onchange="updatePassageway('horizontal', 'width', this.value)" style="width: 100%; padding: 6px; font-size: 12px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="font-size: 11px; color: #666;">Vertical (entre columnas)</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div>
+                                    <label style="font-size: 10px; color: #999;">Cada X columnas</label>
+                                    <input type="number" id="verticalPassEvery" min="0" max="20" value="0" onchange="updatePassageway('vertical', 'every', this.value)" style="width: 100%; padding: 6px; font-size: 12px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 10px; color: #999;">Ancho (cm)</label>
+                                    <input type="number" id="verticalPassWidth" min="10" max="100" value="30" onchange="updatePassageway('vertical', 'width', this.value)" style="width: 100%; padding: 6px; font-size: 12px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 15px 0;">
+
+                    <h3>📈 Resumen total</h3>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Escala calibrada</div>
+                        <div class="sidebar-value" id="scaleInfo">-</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Zonas creadas</div>
+                        <div class="sidebar-value" id="zoneCount">0</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Paneles totales</div>
+                        <div class="sidebar-value" id="panelCount">0</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Potencia total</div>
+                        <div class="sidebar-value" id="totalPower">0 kW</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Área total</div>
+                        <div class="sidebar-value" id="areaInfo">- m²</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Producción mensual</div>
+                        <div class="sidebar-value" id="monthlyProduction">- kWh</div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <div class="sidebar-info">Producción anual</div>
+                        <div class="sidebar-value" id="annualProduction">- MWh</div>
+                    </div>
+
+                    <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 15px 0;">
+
+                    <h3>⚡ Especificaciones</h3>
+                    <div class="sidebar-info">
+                        <strong>Panel Solar:</strong><br/>
+                        700W c/u<br/>
+                        Eficiencia: 18%<br/>
+                        <br/>
+                        <strong>Estándar:</strong><br/>
+                        4 horas pico solar<br/>
+                        30 días/mes
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Calculadora Solar Profesional v5.1 | Multi-zona con rotación individual
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageInput = document.getElementById('imageInput');
+        const toolModeSelect = document.getElementById('toolMode');
+        const showGridCheckbox = document.getElementById('showGrid');
+        const showDrawingCheckbox = document.getElementById('showDrawing');
+        const closeBtn = document.getElementById('closeBtn');
+        const newZoneBtn = document.getElementById('newZoneBtn');
+        const reportSection = document.getElementById('reportSection');
+        const zonesList = document.getElementById('zonesList');
+        const zoneControls = document.getElementById('zoneControls');
+        const calibrationBox = document.getElementById('calibrationBox');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const rotationSlider = document.getElementById('rotationSlider');
+        const horizontalBtn = document.getElementById('horizontalBtn');
+        const verticalBtn = document.getElementById('verticalBtn');
+        
+        let image = null;
+        let calibrationLine = null;
+        let calibrationDistance = null;
+        let pixelsPerMeter = null;
+        let currentMode = 'calibrate';
+        let isDrawing = false;
+        let startPoint = null;
+        let currentPolygon = [];
+        
+        let zones = [];
+        let activeZoneId = null;
+        let zoneCounter = 0;
+        let movingZoneId = null;
+        let moveStartPoint = null;
+        let movingPointIndex = null;
+        let movingPointZoneId = null;
+        
+        const ZONE_COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181'];
+        const POINT_RADIUS = 8;
+        
+        const PANEL_WIDTH_HORIZONTAL = 2.4;
+        const PANEL_HEIGHT_HORIZONTAL = 1.3;
+        const PANEL_WIDTH_VERTICAL = 1.3;
+        const PANEL_HEIGHT_VERTICAL = 2.4;
+        const PANEL_POWER = 700;
+        const PANEL_COST = 300;
+        const ELECTRICITY_COST = 0.15;
+        const SOLAR_PEAK_HOURS = 4;
+        const DAYS_PER_MONTH = 30;
+        
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    image = new Image();
+                    image.onload = () => {
+                        const maxWidth = 1200;
+                        const maxHeight = 650;
+                        let width = image.width;
+                        let height = image.height;
+                        
+                        if (width > maxWidth || height > maxHeight) {
+                            const ratio = Math.min(maxWidth / width, maxHeight / height);
+                            width = Math.floor(width * ratio);
+                            height = Math.floor(height * ratio);
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        draw();
+                    };
+                    image.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        toolModeSelect.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            currentPolygon = [];
+            calibrationLine = null;
+            updateInstructions();
+            if (currentMode === 'draw' && pixelsPerMeter) {
+                closeBtn.disabled = false;
+            } else {
+                closeBtn.disabled = true;
+            }
+            draw();
+        });
+
+        function updateInstructions() {
+            const modeDisplay = document.getElementById('modeDisplay');
+            const modeInstructions = document.getElementById('modeInstructions');
+            
+            if (currentMode === 'calibrate') {
+                modeDisplay.textContent = 'Calibración';
+                modeInstructions.textContent = 'Dibuja una línea de referencia conocida en metros. Luego selecciona "Dibujar zona" para continuar.';
+            } else if (currentMode === 'draw') {
+                modeDisplay.textContent = 'Dibujar zona';
+                modeInstructions.textContent = 'Haz clic para crear vértices. Presiona Enter o usa "Cerrar zona" cuando termines. Para EDITAR una zona: selecciónala y arrastra los puntos (círculos azules) para cambiar su posición, o arrastra dentro de la zona para moverla completa.';
+            } else {
+                modeDisplay.textContent = 'Medir';
+                modeInstructions.textContent = 'Haz clic para medir distancias.';
+            }
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (!image) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            // Si hay una zona activa, detectar si se está clickeando en un punto para moverlo
+            if (activeZoneId !== null && pixelsPerMeter) {
+                const zone = zones.find(z => z.id === activeZoneId);
+                if (zone) {
+                    const pointIndex = getPointAtCoordinates(x, y, zone);
+                    if (pointIndex !== null) {
+                        movingPointZoneId = activeZoneId;
+                        movingPointIndex = pointIndex;
+                        return;
+                    }
+                    
+                    // Si no se clickeó en un punto, detectar si se está clickeando en la zona para moverla
+                    if (pointInPolygon({x, y}, zone.points)) {
+                        movingZoneId = activeZoneId;
+                        moveStartPoint = {x, y};
+                        return;
+                    }
+                }
+            }
+            
+            if (currentMode === 'calibrate') {
+                startPoint = {x, y};
+                isDrawing = true;
+            } else if (currentMode === 'draw' && pixelsPerMeter) {
+                currentPolygon.push({x, y});
+                draw();
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!image) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            // Si se está moviendo un punto de la zona
+            if (movingPointZoneId !== null && movingPointIndex !== null) {
+                const zone = zones.find(z => z.id === movingPointZoneId);
+                if (zone && movingPointIndex < zone.points.length) {
+                    zone.points[movingPointIndex].x = x;
+                    zone.points[movingPointIndex].y = y;
+                    
+                    calculateResults();
+                    draw();
+                }
+                return;
+            }
+            
+            // Si se está moviendo la zona completa
+            if (movingZoneId !== null && moveStartPoint) {
+                const zone = zones.find(z => z.id === movingZoneId);
+                if (zone) {
+                    const dx = x - moveStartPoint.x;
+                    const dy = y - moveStartPoint.y;
+                    
+                    // Aplicar desplazamiento a todos los puntos
+                    zone.points.forEach(point => {
+                        point.x += dx;
+                        point.y += dy;
+                    });
+                    
+                    // Actualizar punto de inicio para el próximo frame
+                    moveStartPoint = {x, y};
+                    
+                    calculateResults();
+                    draw();
+                }
+                return;
+            }
+            
+            if (!isDrawing) return;
+            
+            calibrationLine = {
+                x1: startPoint.x,
+                y1: startPoint.y,
+                x2: x,
+                y2: y
+            };
+            
+            draw();
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            // Detener movimiento de punto
+            if (movingPointZoneId !== null || movingPointIndex !== null) {
+                movingPointZoneId = null;
+                movingPointIndex = null;
+                return;
+            }
+            
+            // Detener movimiento de zona
+            if (movingZoneId !== null) {
+                movingZoneId = null;
+                moveStartPoint = null;
+                return;
+            }
+            
+            if (!isDrawing) return;
+            
+            isDrawing = false;
+            
+            if (calibrationLine && currentMode === 'calibrate') {
+                const dist = Math.sqrt(
+                    Math.pow(calibrationLine.x2 - calibrationLine.x1, 2) +
+                    Math.pow(calibrationLine.y2 - calibrationLine.y1, 2)
+                );
+                
+                const meters = prompt('¿Cuántos metros mide esta línea?', '7.4');
+                if (meters) {
+                    calibrationDistance = parseFloat(meters);
+                    pixelsPerMeter = dist / calibrationDistance;
+                    document.getElementById('scaleInfo').textContent = 
+                        `${Math.round(pixelsPerMeter)} px/m`;
+                    
+                    // Habilitar botón de nueva zona y mostrar mensaje
+                    newZoneBtn.disabled = false;
+                    calibrationBox.style.display = 'block';
+                    
+                    // Cambiar automáticamente a modo dibujo
+                    toolModeSelect.value = 'draw';
+                    currentMode = 'draw';
+                    closeBtn.disabled = false;
+                    updateInstructions();
+                    draw();
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && currentMode === 'draw' && currentPolygon.length >= 3) {
+                closePolygon();
+            }
+        });
+        
+        function getPointAtCoordinates(x, y, zone) {
+            for (let i = 0; i < zone.points.length; i++) {
+                const point = zone.points[i];
+                const dist = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
+                if (dist <= POINT_RADIUS) {
+                    return i;
+                }
+            }
+            return null;
+        }
+        
+        function pointInPolygon(point, polygon) {
+            let inside = false;
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i].x, yi = polygon[i].y;
+                const xj = polygon[j].x, yj = polygon[j].y;
+                
+                const intersect = ((yi > point.y) !== (yj > point.y)) &&
+                    (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        function rectangleInPolygon(rect, polygon) {
+            const corners = [
+                {x: rect.x, y: rect.y},
+                {x: rect.x + rect.width, y: rect.y},
+                {x: rect.x + rect.width, y: rect.y + rect.height},
+                {x: rect.x, y: rect.y + rect.height}
+            ];
+            
+            return corners.every(corner => pointInPolygon(corner, polygon));
+        }
+
+        function rotatePoint(point, center, angleRadians) {
+            const cos = Math.cos(angleRadians);
+            const sin = Math.sin(angleRadians);
+            const x = point.x - center.x;
+            const y = point.y - center.y;
+            return {
+                x: center.x + (x * cos - y * sin),
+                y: center.y + (x * sin + y * cos)
+            };
+        }
+
+        function getPolygonCenter(polygon) {
+            let x = 0, y = 0;
+            polygon.forEach(p => { x += p.x; y += p.y; });
+            return { x: x / polygon.length, y: y / polygon.length };
+        }
+
+        function getRotatedRectCorners(rect, centerOfRotation, angleRadians) {
+            const corners = [
+                {x: rect.x, y: rect.y},
+                {x: rect.x + rect.width, y: rect.y},
+                {x: rect.x + rect.width, y: rect.y + rect.height},
+                {x: rect.x, y: rect.y + rect.height}
+            ];
+            return corners.map(c => rotatePoint(c, centerOfRotation, angleRadians));
+        }
+
+        function rectangleInPolygonRotated(rect, polygon, angleRadians) {
+            const center = getPolygonCenter(polygon);
+            const rotatedCorners = getRotatedRectCorners(rect, center, angleRadians);
+            return rotatedCorners.every(corner => pointInPolygon(corner, polygon));
+        }
+        
+        function createRealisticPanel() {
+            const panelCanvas = document.createElement('canvas');
+            panelCanvas.width = 240;
+            panelCanvas.height = 130;
+            const pCtx = panelCanvas.getContext('2d');
+            
+            const gradient = pCtx.createLinearGradient(0, 0, 0, 130);
+            gradient.addColorStop(0, '#0a0f1f');
+            gradient.addColorStop(0.5, '#0d1428');
+            gradient.addColorStop(1, '#050a15');
+            pCtx.fillStyle = gradient;
+            pCtx.fillRect(0, 0, 240, 130);
+            
+            pCtx.strokeStyle = '#050a15';
+            pCtx.lineWidth = 0.5;
+            
+            const cellWidth = 240 / 6;
+            const cellHeight = 130 / 10;
+            
+            for (let x = 0; x <= 240; x += cellWidth) {
+                pCtx.beginPath();
+                pCtx.moveTo(x, 0);
+                pCtx.lineTo(x, 130);
+                pCtx.stroke();
+            }
+            
+            for (let y = 0; y <= 130; y += cellHeight) {
+                pCtx.beginPath();
+                pCtx.moveTo(0, y);
+                pCtx.lineTo(240, y);
+                pCtx.stroke();
+            }
+            
+            const gloss = pCtx.createLinearGradient(0, 0, 240, 0);
+            gloss.addColorStop(0, 'rgba(150, 180, 220, 0.1)');
+            gloss.addColorStop(0.5, 'rgba(150, 180, 220, 0.05)');
+            gloss.addColorStop(1, 'rgba(150, 180, 220, 0)');
+            pCtx.fillStyle = gloss;
+            pCtx.fillRect(0, 0, 240, 130);
+            
+            pCtx.strokeStyle = '#c0c2c5';
+            pCtx.lineWidth = 4;
+            pCtx.strokeRect(0, 0, 240, 130);
+            
+            pCtx.strokeStyle = '#707274';
+            pCtx.lineWidth = 1;
+            pCtx.strokeRect(2, 2, 236, 126);
+            
+            return panelCanvas;
+        }
+
+        function drawZonePanels(zone) {
+            if (zone.points.length < 3 || !pixelsPerMeter) return 0;
+            
+            const panelWidth = zone.orientation === 'horizontal' ? PANEL_WIDTH_HORIZONTAL : PANEL_WIDTH_VERTICAL;
+            const panelHeight = zone.orientation === 'horizontal' ? PANEL_HEIGHT_HORIZONTAL : PANEL_HEIGHT_VERTICAL;
+            
+            const panelWidthPx = (panelWidth * pixelsPerMeter);
+            const panelHeightPx = (panelHeight * pixelsPerMeter);
+            
+            // Convertir pasillos de cm a múltiplos de altura/ancho de panel
+            const horizontalPassHeightCm = zone.passageway.horizontal.width;
+            const horizontalPassHeightPx = (horizontalPassHeightCm / 100) * pixelsPerMeter;
+            
+            const verticalPassWidthCm = zone.passageway.vertical.width;
+            const verticalPassWidthPx = (verticalPassWidthCm / 100) * pixelsPerMeter;
+            
+            const minX = Math.min(...zone.points.map(p => p.x));
+            const maxX = Math.max(...zone.points.map(p => p.x));
+            const minY = Math.min(...zone.points.map(p => p.y));
+            const maxY = Math.max(...zone.points.map(p => p.y));
+            
+            const panelImage = createRealisticPanel();
+            const angleRadians = (zone.rotation * Math.PI) / 180;
+            const zoneCenter = getPolygonCenter(zone.points);
+            
+            let panelCount = 0;
+            let y = minY;
+            let rowIndex = 0;
+            
+            // Iterar construyendo la grilla fila por fila
+            while (y < maxY) {
+                let isHorizontalPassage = zone.passageway.horizontal.every > 0 && 
+                    (rowIndex + 1) % zone.passageway.horizontal.every === 0;
+                
+                // Altura de esta fila
+                let rowHeightPx = isHorizontalPassage ? horizontalPassHeightPx : panelHeightPx;
+                
+                // Iterar columna por columna en esta fila
+                let x = minX;
+                let colIndex = 0;
+                
+                while (x < maxX) {
+                    let isVerticalPassage = zone.passageway.vertical.every > 0 && 
+                        (colIndex + 1) % zone.passageway.vertical.every === 0;
+                    
+                    // Ancho de esta columna
+                    let colWidthPx = isVerticalPassage ? verticalPassWidthPx : panelWidthPx;
+                    
+                    // Si no es pasillo, renderizar panel
+                    if (!isHorizontalPassage && !isVerticalPassage) {
+                        const rect = {x: x, y: y, width: colWidthPx, height: rowHeightPx};
+                        
+                        if (rectangleInPolygonRotated(rect, zone.points, angleRadians)) {
+                            ctx.save();
+                            ctx.translate(zoneCenter.x, zoneCenter.y);
+                            ctx.rotate(angleRadians);
+                            ctx.globalAlpha = 0.85;
+                            ctx.drawImage(panelImage, x - zoneCenter.x, y - zoneCenter.y, colWidthPx, rowHeightPx);
+                            ctx.globalAlpha = 1.0;
+                            ctx.restore();
+                            
+                            panelCount++;
+                        }
+                    } 
+                    // Si es pasillo, dibujar área de pasillo
+                    else if (isHorizontalPassage || isVerticalPassage) {
+                        if (showDrawingCheckbox.checked) {
+                            ctx.save();
+                            ctx.translate(zoneCenter.x, zoneCenter.y);
+                            ctx.rotate(angleRadians);
+                            
+                            ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+                            ctx.strokeStyle = 'rgba(255, 152, 0, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([5, 5]);
+                            
+                            ctx.fillRect(x - zoneCenter.x, y - zoneCenter.y, colWidthPx, rowHeightPx);
+                            ctx.strokeRect(x - zoneCenter.x, y - zoneCenter.y, colWidthPx, rowHeightPx);
+                            
+                            ctx.setLineDash([]);
+                            ctx.restore();
+                        }
+                    }
+                    
+                    x += colWidthPx;
+                    colIndex++;
+                }
+                
+                y += rowHeightPx;
+                rowIndex++;
+            }
+            
+            return panelCount;
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (image) {
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            }
+            
+            if (currentMode === 'calibrate' && calibrationLine && showDrawingCheckbox.checked) {
+                ctx.strokeStyle = '#ff4444';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(calibrationLine.x1, calibrationLine.y1);
+                ctx.lineTo(calibrationLine.x2, calibrationLine.y2);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#ff4444';
+                ctx.beginPath();
+                ctx.arc(calibrationLine.x1, calibrationLine.y1, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(calibrationLine.x2, calibrationLine.y2, 6, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            
+            // Dibujar zonas existentes
+            if (showGridCheckbox.checked && pixelsPerMeter) {
+                zones.forEach(zone => {
+                    drawZonePanels(zone);
+                });
+            }
+            
+            // Dibujar polígono en construcción
+            if (currentMode === 'draw') {
+                if (currentPolygon.length > 0 && showDrawingCheckbox.checked) {
+                    ctx.strokeStyle = '#667eea';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(currentPolygon[0].x, currentPolygon[0].y);
+                    
+                    for (let i = 1; i < currentPolygon.length; i++) {
+                        ctx.lineTo(currentPolygon[i].x, currentPolygon[i].y);
+                    }
+                    
+                    ctx.stroke();
+                    
+                    currentPolygon.forEach((point, i) => {
+                        ctx.fillStyle = '#667eea';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 10px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(i + 1, point.x, point.y);
+                    });
+                }
+                
+                if (pixelsPerMeter && zones.length > 0) {
+                    calculateResults();
+                }
+            }
+
+            // Dibujar zonas existentes con bordes
+            if (showDrawingCheckbox.checked) {
+                zones.forEach((zone, index) => {
+                    ctx.strokeStyle = zone.id === activeZoneId ? '#2196F3' : ZONE_COLORS[index % ZONE_COLORS.length];
+                    ctx.lineWidth = zone.id === activeZoneId ? 3 : 2;
+                    ctx.beginPath();
+                    ctx.moveTo(zone.points[0].x, zone.points[0].y);
+                    
+                    for (let i = 1; i < zone.points.length; i++) {
+                        ctx.lineTo(zone.points[i].x, zone.points[i].y);
+                    }
+                    
+                    ctx.closePath();
+                    ctx.stroke();
+                    
+                    // Si la zona está activa, dibujar puntos editables
+                    if (zone.id === activeZoneId) {
+                        zone.points.forEach((point, pointIdx) => {
+                            ctx.fillStyle = '#2196F3';
+                            ctx.beginPath();
+                            ctx.arc(point.x, point.y, POINT_RADIUS, 0, 2 * Math.PI);
+                            ctx.fill();
+                            
+                            ctx.strokeStyle = 'white';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                            
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 10px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(pointIdx + 1, point.x, point.y);
+                        });
+                    }
+                });
+            }
+        }
+
+        function startNewZone() {
+            if (!pixelsPerMeter) {
+                alert('Primero calibra la escala dibujando una línea de referencia.');
+                return;
+            }
+            if (currentMode !== 'draw') {
+                alert('Selecciona el modo "Dibujar zona" antes de crear una nueva.');
+                toolModeSelect.value = 'draw';
+                currentMode = 'draw';
+                updateInstructions();
+            }
+            currentPolygon = [];
+            closeBtn.disabled = false;
+            draw();
+        }
+
+        function closePolygon() {
+            if (currentPolygon.length < 3) {
+                alert('Necesitas al menos 3 puntos para crear una zona.');
+                return;
+            }
+            
+            const zone = {
+                id: zoneCounter++,
+                points: [...currentPolygon],
+                orientation: 'horizontal',
+                rotation: 0,
+                passageway: {
+                    horizontal: {
+                        every: 0,      // 0 = desactivado
+                        width: 30      // cm
+                    },
+                    vertical: {
+                        every: 0,      // 0 = desactivado
+                        width: 30      // cm
+                    }
+                }
+            };
+            
+            zones.push(zone);
+            activeZoneId = zone.id;
+            currentPolygon = [];
+            closeBtn.disabled = true;
+            
+            updateZonesList();
+            selectZone(zone.id);
+            calculateResults();
+            draw();
+        }
+
+        function selectZone(zoneId) {
+            activeZoneId = zoneId;
+            const zone = zones.find(z => z.id === zoneId);
+            
+            if (zone) {
+                document.getElementById('activeZoneName').textContent = `Zona ${zone.id + 1}`;
+                document.getElementById('horizontalBtn').classList.toggle('active', zone.orientation === 'horizontal');
+                document.getElementById('verticalBtn').classList.toggle('active', zone.orientation === 'vertical');
+                rotationSlider.value = zone.rotation;
+                document.getElementById('rotationValue').textContent = zone.rotation + '°';
+                
+                // Actualizar controles de pasillos
+                document.getElementById('horizontalPassEvery').value = zone.passageway.horizontal.every;
+                document.getElementById('horizontalPassWidth').value = zone.passageway.horizontal.width;
+                document.getElementById('verticalPassEvery').value = zone.passageway.vertical.every;
+                document.getElementById('verticalPassWidth').value = zone.passageway.vertical.width;
+                
+                zoneControls.style.display = 'block';
+            }
+            
+            updateZonesList();
+            draw();
+        }
+        
+        function updatePassageway(type, property, value) {
+            const zone = zones.find(z => z.id === activeZoneId);
+            if (zone) {
+                if (type === 'horizontal') {
+                    zone.passageway.horizontal[property] = parseInt(value) || 0;
+                } else if (type === 'vertical') {
+                    zone.passageway.vertical[property] = parseInt(value) || 0;
+                }
+                calculateResults();
+                draw();
+            }
+        }
+
+        function setOrientation(orientation) {
+            const zone = zones.find(z => z.id === activeZoneId);
+            if (zone) {
+                zone.orientation = orientation;
+                horizontalBtn.classList.toggle('active', orientation === 'horizontal');
+                verticalBtn.classList.toggle('active', orientation === 'vertical');
+                calculateResults();
+                draw();
+            }
+        }
+
+        function updateRotation() {
+            const zone = zones.find(z => z.id === activeZoneId);
+            if (zone) {
+                zone.rotation = parseInt(rotationSlider.value);
+                document.getElementById('rotationValue').textContent = zone.rotation + '°';
+                calculateResults();
+                draw();
+            }
+        }
+
+        function deleteZone() {
+            if (confirm('¿Eliminar esta zona?')) {
+                zones = zones.filter(z => z.id !== activeZoneId);
+                activeZoneId = null;
+                zoneControls.style.display = 'none';
+                updateZonesList();
+                calculateResults();
+                draw();
+            }
+        }
+
+        function updateZonesList() {
+            if (zones.length === 0) {
+                zonesList.innerHTML = '<div style="color: #999; font-size: 12px; text-align: center; padding: 20px;">Sin zonas creadas.<br/>Dibuja una zona para comenzar.</div>';
+                document.getElementById('zoneCount').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('zoneCount').textContent = zones.length;
+            zonesList.innerHTML = zones.map((zone, index) => {
+                const panelWidth = zone.orientation === 'horizontal' ? PANEL_WIDTH_HORIZONTAL : PANEL_WIDTH_VERTICAL;
+                const panelHeight = zone.orientation === 'horizontal' ? PANEL_HEIGHT_HORIZONTAL : PANEL_HEIGHT_VERTICAL;
+                const panelWidthPx = (panelWidth * pixelsPerMeter);
+                const panelHeightPx = (panelHeight * pixelsPerMeter);
+                
+                const horizontalPassHeightPx = (zone.passageway.horizontal.width / 100) * pixelsPerMeter;
+                const verticalPassWidthPx = (zone.passageway.vertical.width / 100) * pixelsPerMeter;
+                
+                const minX = Math.min(...zone.points.map(p => p.x));
+                const maxX = Math.max(...zone.points.map(p => p.x));
+                const minY = Math.min(...zone.points.map(p => p.y));
+                const maxY = Math.max(...zone.points.map(p => p.y));
+                
+                const angleRadians = (zone.rotation * Math.PI) / 180;
+                
+                let panelCount = 0;
+                let y = minY;
+                let rowIndex = 0;
+                
+                while (y < maxY) {
+                    let isHorizontalPassage = zone.passageway.horizontal.every > 0 && 
+                        (rowIndex + 1) % zone.passageway.horizontal.every === 0;
+                    
+                    let rowHeightPx = isHorizontalPassage ? horizontalPassHeightPx : panelHeightPx;
+                    
+                    let x = minX;
+                    let colIndex = 0;
+                    
+                    while (x < maxX) {
+                        let isVerticalPassage = zone.passageway.vertical.every > 0 && 
+                            (colIndex + 1) % zone.passageway.vertical.every === 0;
+                        
+                        let colWidthPx = isVerticalPassage ? verticalPassWidthPx : panelWidthPx;
+                        
+                        if (!isHorizontalPassage && !isVerticalPassage) {
+                            const rect = {x: x, y: y, width: colWidthPx, height: rowHeightPx};
+                            if (rectangleInPolygonRotated(rect, zone.points, angleRadians)) {
+                                panelCount++;
+                            }
+                        }
+                        
+                        x += colWidthPx;
+                        colIndex++;
+                    }
+                    
+                    y += rowHeightPx;
+                    rowIndex++;
+                }
+                
+                return `
+                    <div class="zone-item color-${index} ${zone.id === activeZoneId ? 'active' : ''}" onclick="selectZone(${zone.id})">
+                        <div class="zone-name"><span class="zone-badge" style="background: ${ZONE_COLORS[index % ZONE_COLORS.length]};"></span>Zona ${zone.id + 1}</div>
+                        <div class="zone-info">
+                            📊 ${panelCount} paneles | 🔄 ${zone.rotation}°
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calculateResults() {
+            let totalPanels = 0;
+            let totalArea = 0;
+            
+            zones.forEach(zone => {
+                const panelWidth = zone.orientation === 'horizontal' ? PANEL_WIDTH_HORIZONTAL : PANEL_WIDTH_VERTICAL;
+                const panelHeight = zone.orientation === 'horizontal' ? PANEL_HEIGHT_HORIZONTAL : PANEL_HEIGHT_VERTICAL;
+                const panelWidthPx = (panelWidth * pixelsPerMeter);
+                const panelHeightPx = (panelHeight * pixelsPerMeter);
+                
+                const horizontalPassHeightPx = (zone.passageway.horizontal.width / 100) * pixelsPerMeter;
+                const verticalPassWidthPx = (zone.passageway.vertical.width / 100) * pixelsPerMeter;
+                
+                const minX = Math.min(...zone.points.map(p => p.x));
+                const maxX = Math.max(...zone.points.map(p => p.x));
+                const minY = Math.min(...zone.points.map(p => p.y));
+                const maxY = Math.max(...zone.points.map(p => p.y));
+                
+                const angleRadians = (zone.rotation * Math.PI) / 180;
+                
+                let panelCount = 0;
+                let y = minY;
+                let rowIndex = 0;
+                
+                // Iterar construyendo la grilla fila por fila
+                while (y < maxY) {
+                    let isHorizontalPassage = zone.passageway.horizontal.every > 0 && 
+                        (rowIndex + 1) % zone.passageway.horizontal.every === 0;
+                    
+                    let rowHeightPx = isHorizontalPassage ? horizontalPassHeightPx : panelHeightPx;
+                    
+                    let x = minX;
+                    let colIndex = 0;
+                    
+                    while (x < maxX) {
+                        let isVerticalPassage = zone.passageway.vertical.every > 0 && 
+                            (colIndex + 1) % zone.passageway.vertical.every === 0;
+                        
+                        let colWidthPx = isVerticalPassage ? verticalPassWidthPx : panelWidthPx;
+                        
+                        // Si no es pasillo, contar panel
+                        if (!isHorizontalPassage && !isVerticalPassage) {
+                            const rect = {x: x, y: y, width: colWidthPx, height: rowHeightPx};
+                            if (rectangleInPolygonRotated(rect, zone.points, angleRadians)) {
+                                panelCount++;
+                            }
+                        }
+                        
+                        x += colWidthPx;
+                        colIndex++;
+                    }
+                    
+                    y += rowHeightPx;
+                    rowIndex++;
+                }
+                
+                totalPanels += panelCount;
+                
+                let area = 0;
+                for (let i = 0; i < zone.points.length; i++) {
+                    const j = (i + 1) % zone.points.length;
+                    area += zone.points[i].x * zone.points[j].y;
+                    area -= zone.points[j].x * zone.points[i].y;
+                }
+                totalArea += Math.abs(area) / 2;
+            });
+            
+            const areaMqm = totalArea / (pixelsPerMeter * pixelsPerMeter);
+            const totalPowerKW = (totalPanels * PANEL_POWER) / 1000;
+            const monthlyProductionKWh = totalPowerKW * SOLAR_PEAK_HOURS * DAYS_PER_MONTH;
+            const annualProductionMWh = (monthlyProductionKWh * 12) / 1000;
+            
+            const investment = totalPanels * PANEL_COST;
+            const annualSavings = monthlyProductionKWh * 12 * ELECTRICITY_COST;
+            const paybackPeriod = annualSavings > 0 ? investment / annualSavings : 0;
+            
+            document.getElementById('panelCount').textContent = totalPanels;
+            document.getElementById('totalPower').textContent = totalPowerKW.toFixed(2) + ' kW';
+            document.getElementById('areaInfo').textContent = areaMqm.toFixed(2) + ' m²';
+            document.getElementById('monthlyProduction').textContent = monthlyProductionKWh.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' kWh';
+            document.getElementById('annualProduction').textContent = annualProductionMWh.toFixed(2) + ' MWh';
+            
+            if (totalPanels > 0) {
+                reportSection.style.display = 'block';
+                document.getElementById('reportPanels').textContent = totalPanels;
+                document.getElementById('reportPower').textContent = totalPowerKW.toFixed(2) + ' kW';
+                document.getElementById('reportArea').textContent = areaMqm.toFixed(2) + ' m²';
+                document.getElementById('reportMonthlyProduction').textContent = monthlyProductionKWh.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' kWh';
+                document.getElementById('reportAnnualProduction').textContent = annualProductionMWh.toFixed(2) + ' MWh';
+                document.getElementById('reportInvestment').textContent = '$' + investment.toLocaleString('es-ES', {maximumFractionDigits: 0});
+                document.getElementById('reportSavings').textContent = '$' + Math.round(annualSavings).toLocaleString('es-ES');
+                document.getElementById('reportPayback').textContent = paybackPeriod.toFixed(1) + ' años';
+            } else {
+                reportSection.style.display = 'none';
+            }
+            
+            updateZonesList();
+        }
+        
+        function resetCanvas() {
+            zones = [];
+            activeZoneId = null;
+            currentPolygon = [];
+            calibrationLine = null;
+            calibrationDistance = null;
+            pixelsPerMeter = null;
+            zoneCounter = 0;
+            
+            document.getElementById('scaleInfo').textContent = '-';
+            document.getElementById('zoneCount').textContent = '0';
+            document.getElementById('panelCount').textContent = '0';
+            document.getElementById('totalPower').textContent = '0 kW';
+            document.getElementById('areaInfo').textContent = '- m²';
+            document.getElementById('monthlyProduction').textContent = '- kWh';
+            document.getElementById('annualProduction').textContent = '- MWh';
+            
+            zoneControls.style.display = 'none';
+            reportSection.style.display = 'none';
+            calibrationBox.style.display = 'none';
+            closeBtn.disabled = true;
+            newZoneBtn.disabled = true;
+            
+            updateZonesList();
+            draw();
+        }
+
+        function exportImage(format) {
+            if (zones.length === 0 || !pixelsPerMeter) {
+                alert('Crea al menos una zona con paneles antes de exportar.');
+                return;
+            }
+            
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = canvas.width;
+            exportCanvas.height = canvas.height;
+            const exportCtx = exportCanvas.getContext('2d');
+            
+            exportCtx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            
+            zones.forEach(zone => {
+                const panelWidth = zone.orientation === 'horizontal' ? PANEL_WIDTH_HORIZONTAL : PANEL_WIDTH_VERTICAL;
+                const panelHeight = zone.orientation === 'horizontal' ? PANEL_HEIGHT_HORIZONTAL : PANEL_HEIGHT_VERTICAL;
+                const panelWidthPx = (panelWidth * pixelsPerMeter);
+                const panelHeightPx = (panelHeight * pixelsPerMeter);
+                
+                const minX = Math.min(...zone.points.map(p => p.x));
+                const maxX = Math.max(...zone.points.map(p => p.x));
+                const minY = Math.min(...zone.points.map(p => p.y));
+                const maxY = Math.max(...zone.points.map(p => p.y));
+                
+                const panelImage = createRealisticPanel();
+                const angleRadians = (zone.rotation * Math.PI) / 180;
+                const zoneCenter = getPolygonCenter(zone.points);
+                
+                for (let x = minX; x < maxX; x += panelWidthPx) {
+                    for (let y = minY; y < maxY; y += panelHeightPx) {
+                        const rect = {x: x, y: y, width: panelWidthPx, height: panelHeightPx};
+                        
+                        if (rectangleInPolygonRotated(rect, zone.points, angleRadians)) {
+                            exportCtx.save();
+                            exportCtx.translate(zoneCenter.x, zoneCenter.y);
+                            exportCtx.rotate(angleRadians);
+                            exportCtx.globalAlpha = 0.85;
+                            exportCtx.drawImage(panelImage, x - zoneCenter.x, y - zoneCenter.y, panelWidthPx, panelHeightPx);
+                            exportCtx.globalAlpha = 1.0;
+                            exportCtx.restore();
+                        }
+                    }
+                }
+            });
+            
+            const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+            const filename = `proyecto_solar_${new Date().getTime()}.${format}`;
+            
+            exportCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(url);
+            }, mimeType, format === 'jpg' ? 0.95 : 1);
+        }
+
+        function exportPDF() {
+            const element = document.querySelector('.content');
+            const opt = {
+                margin: 10,
+                filename: `proyecto_solar_${new Date().getTime()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        updateInstructions();
+    </script>
+</body>
+</html>
