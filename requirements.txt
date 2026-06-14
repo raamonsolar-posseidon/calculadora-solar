@@ -1,2 +1,13 @@
 Flask==2.3.2
+<<<<<<< HEAD
 Werkzeug==2.3.7
+=======
+Flask-SQLAlchemy==3.0.3
+Flask-CORS==4.0.0
+SQLAlchemy==2.0.19
+gunicorn==20.1.0
+matplotlib==3.7.1
+numpy==1.24.3
+psycopg2-binary==2.9.6
+python-dotenv==1.0.0
+>>>>>>> 425076e80815fa991fb7133125feef70445c26c9
