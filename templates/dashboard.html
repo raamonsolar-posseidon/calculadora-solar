@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - RA-AMON SOLAR</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0c0b0b;
+            color: #f0ede8;
+        }
+        
+        .navbar {
+            background: #1a1818;
+            border-bottom: 2px solid #F5C518;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: #F5C518;
+            font-size: 22px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .resumen {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: #1a1818;
+            border: 2px solid #F5C518;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-title {
+            color: #9a9590;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            color: #F5C518;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .stat-sub {
+            color: #9a9590;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .table-container {
+            background: #1a1818;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #0c0b0b;
+            color: #F5C518;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #F5C518;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+        }
+        
+        tr:hover {
+            background: #252323;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status.pendiente {
+            background: #2a2a0a;
+            color: #ffff66;
+        }
+        
+        .status.visto {
+            background: #0a2a2a;
+            color: #66ffff;
+        }
+        
+        .status.compartido {
+            background: #2a0a2a;
+            color: #ff66ff;
+        }
+        
+        .btn {
+            background: #F5C518;
+            color: #0c0b0b;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #c9a00f;
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #9a9590;
+        }
+        
+        .empty-state h3 {
+            color: #F5C518;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <h1>⚡ RA-AMON SOLAR - Dashboard Admin</h1>
+        </div>
+        <a href="/" style="color: #F5C518; text-decoration: none; font-size: 13px;">← Nueva Propuesta</a>
+    </div>
+    
+    <div class="container">
+        <div class="resumen">
+            <div class="stat-box">
+                <div class="stat-title">Total Propuestas</div>
+                <div class="stat-value">{{ resumen.total }}</div>
+                <div class="stat-sub">Generadas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Propuestas Vistas</div>
+                <div class="stat-value">{{ resumen.vistas }}</div>
+                <div class="stat-sub">Aceptadas por cliente</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Inversión Total</div>
+                <div class="stat-value">{{ "$ %d"|format(resumen.valor_total / 1000000) }}M</div>
+                <div class="stat-sub">COP en propuestas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Paneles Totales</div>
+                <div class="stat-value">{{ resumen.paneles_totales }}</div>
+                <div class="stat-sub">700W c/u</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            {% if propuestas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Paneles</th>
+                        <th>Inversión</th>
+                        <th>Inversor</th>
+                        <th>Estado</th>
+                        <th>Creada</th>
+                        <th>Vistas</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prop in propuestas %}
+                    <tr>
+                        <td>{{ prop.nombre_cliente }}</td>
+                        <td>{{ prop.paneles }}</td>
+                        <td>$ {{ "{:,}".format(prop.precio).replace(",", ".") }}</td>
+                        <td>{{ prop.inversor_marca }} {{ prop.inversor_kw }}kW</td>
+                        <td>
+                            <span class="status {{ prop.estado }}">{{ prop.estado }}</span>
+                        </td>
+                        <td>{{ prop.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ prop.visualizaciones|length }}</td>
+                        <td>
+                            <a href="/admin/{{ prop.id }}">
+                                <button class="btn">Ver Detalles</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <h3>📭 Sin propuestas aún</h3>
+                <p>Crea tu primera propuesta para comenzar el seguimiento</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
