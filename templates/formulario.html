@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Propuesta - RA-AMON SOLAR</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0b0b 0%, #1a1818 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #1a1818;
+            border: 2px solid #F5C518;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #F5C518;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #F5C518;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #9a9590;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #F5C518;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #0c0b0b;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #f0ede8;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.3);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #F5C518 0%, #c9a00f 100%);
+            border: none;
+            border-radius: 5px;
+            color: #0c0b0b;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(245, 197, 24, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .success-box {
+            background: #0a2a0a;
+            border: 2px solid #66ee66;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success-box h3 {
+            color: #66ee66;
+            margin-bottom: 15px;
+        }
+        
+        .link-box {
+            background: #1a1818;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            word-break: break-all;
+            color: #f0ede8;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .copy-btn {
+            background: #F5C518;
+            color: #0c0b0b;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #c9a00f;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ RA-AMON SOLAR</h1>
+            <p>Generador de Propuestas Inteligentes</p>
+        </div>
+        
+        <form id="form">
+            <div class="form-group">
+                <label>Nombre del Cliente *</label>
+                <input type="text" name="nombre" required placeholder="Ej: Juan García">
+            </div>
+            
+            <div class="two-col">
+                <div class="form-group">
+                    <label>Número de Paneles *</label>
+                    <input type="number" name="paneles" required min="6" max="100" placeholder="6-100">
+                </div>
+                <div class="form-group">
+                    <label>Inversión Total (COP) *</label>
+                    <input type="number" name="precio" required min="1000000" placeholder="Ej: 25000000">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Marca de Inversor *</label>
+                <select name="inversor_marca" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="SOLAX">SOLAX</option>
+                    <option value="HUAWEI">HUAWEI</option>
+                    <option value="SMA">SMA</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Modelo Inversor *</label>
+                <input type="text" name="inversor_modelo" required placeholder="Ej: X1-SMART-10K-G2">
+            </div>
+            
+            <div class="two-col">
+                <div class="form-group">
+                    <label>Potencia (kW) *</label>
+                    <input type="number" name="inversor_kw" required step="0.5" min="3" placeholder="Ej: 10">
+                </div>
+                <div class="form-group">
+                    <label>Fase *</label>
+                    <select name="inversor_fase" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="monofasico">Monofásico</option>
+                        <option value="bifasico">Bifásico</option>
+                        <option value="trifasico">Trifásico</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit">Generar Propuesta</button>
+            <span class="error" id="error"></span>
+        </form>
+        
+        <div class="success-box" id="success">
+            <h3>✓ Propuesta Generada Exitosamente</h3>
+            <p style="color: #9a9590; margin-bottom: 15px;">Comparte estos enlaces:</p>
+            
+            <div>
+                <label style="font-size: 12px;">Link para Cliente:</label>
+                <div class="link-box" id="clientLink"></div>
+                <button class="copy-btn" onclick="copiar('clientLink')">Copiar link cliente</button>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label style="font-size: 12px;">Link para Admin (Seguimiento):</label>
+                <div class="link-box" id="adminLink"></div>
+                <button class="copy-btn" onclick="copiar('adminLink')">Copiar link admin</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const res = await fetch('/api/crear-propuesta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (res.ok) {
+                    document.getElementById('clientLink').textContent = result.link;
+                    document.getElementById('adminLink').textContent = result.link_admin;
+                    document.getElementById('success').style.display = 'block';
+                    document.getElementById('form').style.display = 'none';
+                    document.getElementById('error').style.display = 'none';
+                } else {
+                    mostrarError('Error al crear propuesta');
+                }
+            } catch (err) {
+                mostrarError('Error de conexión');
+            }
+        });
+        
+        function copiar(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Link copiado al portapapeles');
+            });
+        }
+        
+        function mostrarError(msg) {
+            const error = document.getElementById('error');
+            error.textContent = msg;
+            error.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
